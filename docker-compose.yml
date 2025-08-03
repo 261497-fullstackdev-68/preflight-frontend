@@ -1,0 +1,15 @@
+name: preflight-project-g11
+
+services:
+  frontend:
+    build: .
+    container_name: pf-frontend
+    ports: 
+      - ${FRONT_END_PORT}:5173
+    environment:
+      - FRONT_END_PORT=${FRONT_END_PORT}
+      - BACK_END_URL=${BACK_END_URL}
+    networks:
+      - pf-net
+networks:
+  pf-net:
