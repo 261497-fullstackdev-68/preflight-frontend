@@ -24,7 +24,7 @@ function App() {
         console.error("Failed to fetch data:", err);
       });
 
-    fetch("http://pf-backend:3000/api/")
+    fetch("/api/users")
       .then((res) => {
         if (!res.ok) {
           throw new Error("Network response was not ok");
