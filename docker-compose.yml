@@ -5,7 +5,7 @@ services:
     build: .
     container_name: pf-frontend
     ports: 
-      - ${FRONT_END_PORT}:5173
+      - ${FRONT_END_PORT}:${FRONT_END_PORT}
     environment:
       - FRONT_END_PORT=${FRONT_END_PORT}
       - BACK_END_URL=${BACK_END_URL}
