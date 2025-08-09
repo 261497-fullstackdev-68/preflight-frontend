@@ -7,38 +7,38 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [error2, setError2] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   // Use the proxied path /api
-  //   fetch("/api/")
-  //     .then((response) => {
-  //       if (!response.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       return response.text();
-  //     })
-  //     .then((text) => {
-  //       setData1(text);
-  //     })
-  //     .catch((err) => {
-  //       setError1(err.message);
-  //       console.error("Failed to fetch data:", err);
-  //     });
+  useEffect(() => {
+    //   // Use the proxied path /api
+    //   fetch("/api/")
+    //     .then((response) => {
+    //       if (!response.ok) {
+    //         throw new Error("Network response was not ok");
+    //       }
+    //       return response.text();
+    //     })
+    //     .then((text) => {
+    //       setData1(text);
+    //     })
+    //     .catch((err) => {
+    //       setError1(err.message);
+    //       console.error("Failed to fetch data:", err);
+    //     });
 
-  //   fetch("http://pf-backend:3000/api/")
-  //     .then((res) => {
-  //       if (!res.ok) {
-  //         throw new Error("Network response was not ok");
-  //       }
-  //       return res.text();
-  //     })
-  //     .then((text) => {
-  //       setData2(text);
-  //     })
-  //     .catch((err) => {
-  //       setError2(err.message);
-  //       console.error("Failed to fetch data:", err);
-  //     });
-  // }, []);
+    //   fetch("http://pf-backend:3000/api/")
+    //     .then((res) => {
+    //       if (!res.ok) {
+    //         throw new Error("Network response was not ok");
+    //       }
+    //       return res.text();
+    //     })
+    //     .then((text) => {
+    //       setData2(text);
+    //     })
+    //     .catch((err) => {
+    //       setError2(err.message);
+    //       console.error("Failed to fetch data:", err);
+    //     });
+    // }, []);
 
   return (
     <div className="App">
