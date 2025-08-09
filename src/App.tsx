@@ -40,6 +40,22 @@ function App() {
   //     });
   // }, []);
 
+    fetch("/api/users")
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return res.text();
+      })
+      .then((text) => {
+        setData2(text);
+      })
+      .catch((err) => {
+        setError2(err.message);
+        console.error("Failed to fetch data:", err);
+      });
+  }, []);
+
   return (
     <div className="App">
       <h1>Frontend-Backend Connection Test</h1>
