@@ -7,7 +7,7 @@ function App() {
   const [error1, setError1] = useState<string | null>(null);
   const [error2, setError2] = useState<string | null>(null);
 
-  useEffect(() => {
+  // useEffect(() => {
   //   // Use the proxied path /api
   //   fetch("/api/")
   //     .then((response) => {
