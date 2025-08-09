@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/components/FullTodoPopup.jsx
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -6,84 +7,208 @@ import {
   Typography,
   IconButton,
   Button,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import ShareIcon from "@mui/icons-material/Share";
-import { SharePopup } from "./sharePopup";
+  TextField,
+  InputAdornment,
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import ShareIcon from '@mui/icons-material/Share';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { SharePopup } from './sharePopup';
 
-// Using the Todo interface from a previous conversation
+// You will need to define this interface for your todo data
 export interface Todo {
-  task_id: number;
-  user_id: number;
+  task_id: number | null;
+  userId: number;
   title: string;
   description: string;
-  is_done: boolean;
-  start_date: Date | null;
-  image_path: string | null;
-  end_date: Date | null;
+  isDone: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  imagePath: string | null;
+}
+
+// Use an enum to define the three modes
+export enum PopupMode {
+  Create = 'create',
+  Edit = 'edit',
+  ViewInvited = 'viewInvited',
 }
 
 interface FullTodoPopupProps {
   open: boolean;
   onClose: () => void;
-  todo: Todo | null;
+  mode: PopupMode; // The key prop to control the variant
+  todo: Todo | null; // The todo data, only used in 'edit' and 'viewInvited' modes
 }
 
-export function FullTodoPopup({ open, onClose, todo }: FullTodoPopupProps) {
+export function FullTodoPopup({ open, onClose, mode, todo }: FullTodoPopupProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
-    
+  const [isEditing, setIsEditing] = useState(mode === PopupMode.Create || mode === PopupMode.Edit);
 
-  if (!todo) {
-    return null;
-  }
+  const [localTodo, setLocalTodo] = useState<Todo>(
+    todo || {
+      task_id: null,
+      userId: 1, // Default user ID
+      title: '',
+      description: '',
+      isDone: false,
+      startDate: null,
+      endDate: null,
+      imagePath: null,
+    }
+  );
 
-  const handleSharePopupOpen = () => {
-    setIsSharePopupOpen(true);
+  useEffect(() => {
+    if (open) {
+      if (mode === PopupMode.Create) {
+        setLocalTodo({
+          task_id: null,
+          userId: 1,
+          title: '',
+          description: '',
+          isDone: false,
+          startDate: null,
+          endDate: null,
+          imagePath: null,
+        });
+        setIsEditing(true);
+      } else {
+        setLocalTodo(todo || localTodo);
+        setIsEditing(mode === PopupMode.Edit);
+      }
+    }
+  }, [open, mode, todo]);
+
+  const handleSharePopupOpen = () => setIsSharePopupOpen(true);
+  const handleSharePopupClose = () => setIsSharePopupOpen(false);
+
+  const handleSave = () => {
+    console.log('Saving todo:', localTodo);
+    // Add your save logic here
+    onClose();
   };
 
-  const handleSharePopupClose = () => {
-    setIsSharePopupOpen(false);
+  const handleDelete = () => {
+    console.log('Deleting todo:', localTodo.task_id);
+    // Add your delete logic here
+    onClose();
   };
 
   const handleAccept = () => {
-    console.log(`Accepted todo: ${todo.title}`);
-    // Your accept logic here
+    console.log('Accepting todo:', localTodo.task_id);
+    // Add your accept logic here (e.g., using the useAcceptTodo hook)
     onClose();
   };
 
   const handleDecline = () => {
-    console.log(`Declined todo: ${todo.title}`);
-    // Your decline logic here
+    console.log('Declining todo:', localTodo.task_id);
+    // Add your decline logic here
     onClose();
   };
 
-  const formatDate = (date: Date | null) => {
-    if (!date) return "Not set";
-    return date.toLocaleString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    });
+  const renderButtons = () => {
+    switch (mode) {
+      case PopupMode.Create:
+      case PopupMode.Edit:
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, pt: 3 }}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleSave}
+            >
+              save
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDelete}
+            >
+              delete
+            </Button>
+          </Box>
+        );
+      case PopupMode.ViewInvited:
+        return (
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, pt: 3 }}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleAccept}
+            >
+              accept
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDecline}
+            >
+              decline
+            </Button>
+          </Box>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderBody = () => {
+    if (isEditing) {
+      return (
+        <Box>
+          <TextField
+            fullWidth
+            label="Start Date"
+            type="datetime-local"
+            value={localTodo.startDate || ''}
+            onChange={(e) => setLocalTodo({ ...localTodo, startDate: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="End Date"
+            type="datetime-local"
+            value={localTodo.endDate || ''}
+            onChange={(e) => setLocalTodo({ ...localTodo, endDate: e.target.value })}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            multiline
+            rows={4}
+            value={localTodo.description}
+            onChange={(e) => setLocalTodo({ ...localTodo, description: e.target.value })}
+          />
+        </Box>
+      );
+    } else {
+      return (
+        <Box>
+          <Typography variant="body1" color="text.secondary">
+            Saturday 20th at 05.00 p.m.
+            <br />
+            Sunday 21st at 11:00 p.m.
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+            <EditIcon fontSize="small" sx={{ mr: 1 }} />
+            {localTodo.description}
+          </Typography>
+        </Box>
+      );
+    }
   };
 
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <Box sx={{ p: 4 }}>
-          <DialogTitle
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              p: 0,
-              pb: 2,
-            }}
-          >
+          <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 0, pb: 2 }}>
             <Typography variant="h5" fontWeight="bold">
-              {todo.title}
+              {localTodo.title || "New Todo"}
             </Typography>
             <Box>
               <IconButton onClick={handleSharePopupOpen}>
@@ -94,52 +219,19 @@ export function FullTodoPopup({ open, onClose, todo }: FullTodoPopupProps) {
               </IconButton>
             </Box>
           </DialogTitle>
-          <Box sx={{ display: "flex", gap: 3, mb: 3 }}>
-            <Box
-              sx={{
-                width: 150,
-                height: 150,
-                bgcolor: "#f0f0f0",
-                borderRadius: 2,
-              }}
-            />
-            <Box>
-              <Typography variant="body1" color="text.secondary">
-                {formatDate(todo.start_date)}
-              </Typography>
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{ pb: 1, borderBottom: "1px solid #ccc" }}
-              >
-                {formatDate(todo.end_date)}
-              </Typography>
-              <Typography variant="body2" sx={{ pt: 1, my: 1 }}>
-                {todo.description}
-              </Typography>
+          <Box sx={{ display: 'flex', gap: 3, pt: 2 }}>
+            <Box sx={{ width: 120, height: 120, bgcolor: 'grey.300', flexShrink: 0 }} />
+            <Box sx={{ flexGrow: 1 }}>
+              {renderBody()}
             </Box>
           </Box>
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-            <Button
-              variant="contained"
-              color="success"
-              sx={{ flexGrow: 1 }}
-              onClick={handleAccept}
-            >
-              accept
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              sx={{ flexGrow: 1 }}
-              onClick={handleDecline}
-            >
-              decline
-            </Button>
-          </Box>
+          {renderButtons()}
         </Box>
       </Dialog>
-      <SharePopup open={isSharePopupOpen} onClose={handleSharePopupClose} />
+      <SharePopup
+        open={isSharePopupOpen}
+        onClose={handleSharePopupClose}
+      />
     </>
   );
 }

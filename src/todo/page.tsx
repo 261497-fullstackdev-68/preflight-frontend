@@ -1,6 +1,9 @@
 import "./todo.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import NotificationBadge from "../component/notificationBadge";
+import { FullTodoPopup, PopupMode } from "../component/fullTodoPopup";
+import type { Todo } from "../component/fullTodoPopup";
 
 // Thailand day colors: Sunday=red, Monday=yellow, Tuesday=pink, Wednesday=green, Thursday=orange, Friday=blue, Saturday=purple
 const thaiDayColors = [
@@ -21,6 +24,10 @@ function getWeekDates(refDate: dayjs.Dayjs) {
 function Todo() {
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
 
+  const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
+  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
   const startMonth = weekDates[0].format("MMMM");
@@ -38,6 +45,15 @@ function Todo() {
 
   const handlePrevWeek = () => {
     setWeekStart(weekStart.subtract(1, "week"));
+  };
+
+  const handleOpenCreatePopup = () => {
+    setPopupMode(PopupMode.Create);
+    setIsFullTodoPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsFullTodoPopupOpen(false);
   };
 
   return (
@@ -111,24 +127,20 @@ function Todo() {
       <button
         className="fixed bottom-8 right-8 bg-gray-900 hover:bg-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg text-3xl hover:cursor-pointer"
         aria-label="Add"
+        onClick={handleOpenCreatePopup}
       >
         +
       </button>
       {/* Place your PNG file in the public folder, e.g. public/notification.png */}
-      <button
-        className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer"
-        aria-label="Notification"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M4 8a6 6 0 0 1 4.03-5.67a2 2 0 1 1 3.95 0A6 6 0 0 1 16 8v6l3 2v1H1v-1l3-2zm8 10a2 2 0 1 1-4 0z" />
-        </svg>
-      </button>
+      <div>
+        <NotificationBadge />
+      </div>
+      <FullTodoPopup
+        open={isFullTodoPopupOpen}
+        onClose={handleClosePopup}
+        mode={popupMode}
+        todo={selectedTodo}
+      />
     </div>
   );
 }
