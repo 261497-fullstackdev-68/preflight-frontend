@@ -1,6 +1,8 @@
 import "./todo.css";
 import { useState } from "react";
 import dayjs from "dayjs";
+import { NewTodoPopup } from "../component/NewTodoPopup";
+import type { Todo } from "../component/NewTodoPopup";
 
 // Thailand day colors: Sunday=red, Monday=yellow, Tuesday=pink, Wednesday=green, Thursday=orange, Friday=blue, Saturday=purple
 const thaiDayColors = [
@@ -38,6 +40,24 @@ function Todo() {
 
   const handlePrevWeek = () => {
     setWeekStart(weekStart.subtract(1, "week"));
+  };
+
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const handleAddClick = () => {
+    // สร้าง todo ตัวอย่าง
+    const newTodo: Todo = {
+      taskId: 1,
+      userId: 1,
+      title: "New Todo",
+      description: "รายละเอียดของ todo",
+      is_done: false,
+      start_date: new Date(),
+      end_date: new Date(),
+      image_path: null,
+    };
+    setSelectedTodo(newTodo);
+    setIsPopupOpen(true);
   };
 
   return (
@@ -111,6 +131,7 @@ function Todo() {
       <button
         className="fixed bottom-8 right-8 bg-gray-900 hover:bg-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg text-3xl hover:cursor-pointer"
         aria-label="Add"
+        onClick={handleAddClick}
       >
         +
       </button>
@@ -129,6 +150,14 @@ function Todo() {
           <path d="M4 8a6 6 0 0 1 4.03-5.67a2 2 0 1 1 3.95 0A6 6 0 0 1 16 8v6l3 2v1H1v-1l3-2zm8 10a2 2 0 1 1-4 0z" />
         </svg>
       </button>
+
+      <NewTodoPopup
+        open={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onCreate={(todo) => {
+          console.log("New Todo Created:", todo);
+        }}
+      />
     </div>
   );
 }

@@ -31,7 +31,6 @@ interface FullTodoPopupProps {
 
 export function FullTodoPopup({ open, onClose, todo }: FullTodoPopupProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
-    
 
   if (!todo) {
     return null;
