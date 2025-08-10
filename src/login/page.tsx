@@ -4,7 +4,11 @@ import bgImage from "../assets/bgImage.png";
 import bgloginFull from "../assets/bglogin_full.png"; // ตรวจสอบ path ให้ถูกต้อง
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // เพิ่ม import icons
 
-export default function LoginPage() {
+type LoginPageProps = {
+  onLogin: (user_id: number) => void;
+};
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -12,6 +16,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
 
+
+  const handleSignUpSuccess = () => {
+    setShowSignUp(false);
+  };
+  
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -35,6 +44,7 @@ export default function LoginPage() {
         setMessage(data.message || "เข้าสู่ระบบสำเร็จ");
         setUsername("");
         setPassword("");
+        onLogin(data.user_id);
       } else {
         setError(data.error || "Incorrect username or password");
       }
@@ -46,7 +56,7 @@ export default function LoginPage() {
   if (showSignUp) {
     return (
       <div>
-        <SignUpPage />
+        <SignUpPage onSignUpSuccess={handleSignUpSuccess} />
       </div>
     );
   }

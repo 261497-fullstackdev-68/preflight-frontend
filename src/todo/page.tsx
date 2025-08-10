@@ -21,12 +21,16 @@ function getWeekDates(refDate: dayjs.Dayjs) {
   return Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, "day"));
 }
 
-function Todo() {
-  const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
+type TodoProps = {
+  userId: number | null;
+};
 
+function TodoPage({ userId }: TodoProps) {
+  const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
   const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [todos, setTodos] = useState<Todo[]>([]);
 
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
@@ -55,6 +59,18 @@ function Todo() {
   const handleClosePopup = () => {
     setIsFullTodoPopupOpen(false);
   };
+
+  // Fetch todos from the backend when the userId changes
+  useEffect(() => {
+    if (userId) {
+      const fetchTodos = async () => {
+        const response = await fetch(`/api/getTodos?userId=${userId}`);
+        const data = await response.json();
+        setTodos(data);
+      };
+      fetchTodos();
+    }
+  }, [userId]);
 
   return (
     <div>
@@ -132,7 +148,7 @@ function Todo() {
         +
       </button>
       {/* Place your PNG file in the public folder, e.g. public/notification.png */}
-      <div>
+      <div className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer">
         <NotificationBadge />
       </div>
       <FullTodoPopup
@@ -145,4 +161,4 @@ function Todo() {
   );
 }
 
-export default Todo;
+export default TodoPage;

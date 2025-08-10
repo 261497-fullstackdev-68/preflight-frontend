@@ -2,8 +2,13 @@ import React, { useState } from "react";
 import bgImage from "../assets/bgImage.png";
 import bgsignupFull from "../assets/bgsignup_full.png";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // เพิ่ม import icons
+import Swal from "sweetalert2";
 
-export default function SignUpPage() {
+type SignUpPageProps = {
+  onSignUpSuccess: () => void;
+};
+
+export default function SignUpPage({ onSignUpSuccess }: SignUpPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,6 +45,14 @@ export default function SignUpPage() {
         setUsername("");
         setPassword("");
         setConfirmPassword("");
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Signup successfully!",
+        }).then(() => {
+          // Call the prop function after the user closes the alert
+          onSignUpSuccess();
+        });
       } else {
         setError(data.error || "Username already exists.");
       }
@@ -167,7 +180,14 @@ export default function SignUpPage() {
             }}
           >
             Password
-            <div style={{ width: "50%", position: "relative", display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "50%",
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -203,7 +223,11 @@ export default function SignUpPage() {
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <AiFillEye color="black" /> : <AiFillEyeInvisible color="black" />}
+                {showPassword ? (
+                  <AiFillEye color="black" />
+                ) : (
+                  <AiFillEyeInvisible color="black" />
+                )}
               </button>
             </div>
           </label>
@@ -224,7 +248,14 @@ export default function SignUpPage() {
             }}
           >
             Confirm Password
-            <div style={{ width: "50%", position: "relative", display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                width: "50%",
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
@@ -258,15 +289,33 @@ export default function SignUpPage() {
                   padding: 0,
                 }}
                 tabIndex={-1}
-                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
               >
-                {showConfirmPassword ? <AiFillEye color="black" /> : <AiFillEyeInvisible color="black" />}
+                {showConfirmPassword ? (
+                  <AiFillEye color="black" />
+                ) : (
+                  <AiFillEyeInvisible color="black" />
+                )}
               </button>
             </div>
           </label>
 
           {error && (
-            <div style={{ color: "red", marginTop: 8, textAlign: "left", width: "91%", fontFamily: "Inria Serif, serif" }}>{error}</div>
+            <div
+              style={{
+                color: "red",
+                marginTop: 8,
+                textAlign: "left",
+                width: "91%",
+                fontFamily: "Inria Serif, serif",
+              }}
+            >
+              {error}
+            </div>
           )}
 
           <button
