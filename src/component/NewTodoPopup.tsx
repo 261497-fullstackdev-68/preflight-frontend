@@ -43,26 +43,49 @@ export function NewTodoPopup({ open, onClose, onCreate }: NewTodoPopupProps) {
 
   if (!open) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    axios.request({
-      url: "/api/todo/create",
-      method: "put",
-      data: {
-        userId: 0,
-        title: title,
-        description: description,
+
+    try {
+      // สมมุติว่าคุณมี userId จาก context หรือ props
+      const userId = 1; // เปลี่ยนตามจริงที่คุณมี
+
+      const response = await fetch("/api/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          title,
+          description,
+          startDate,
+          endDate,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(
+          "Failed to create todo: " + (errorData.error || response.statusText)
+        );
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Created todo:", data);
+
+      // เรียก onCreate เพื่ออัปเดตข้อมูลใน parent component
+      onCreate({
+        title,
+        description,
         start_date: startDate,
         end_date: endDate,
-      },
-    });
-    // onCreate({
-    //   title,
-    //   description,
-    //   start_date: startDate,
-    //   end_date: endDate,
-    // });
-    onClose();
+      });
+
+      onClose();
+    } catch (error) {
+      console.error("Error creating todo:", error);
+      alert("Something went wrong");
+    }
   };
 
   return (
