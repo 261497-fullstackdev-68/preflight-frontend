@@ -288,9 +288,6 @@ export default function SignUpPage() {
           >
             Sign up
           </button>
-          {message && (
-            <div style={{ color: "green", marginTop: 16, textAlign: "left", width: "90%", fontFamily: "Inria Serif, serif" }}>{message}</div>
-          )}
         </form>
       </div>
     </div>
