@@ -1,11 +1,13 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import LoginPage from './login/page.tsx'
 import App from "./App.tsx";
 import Calendar from "./todo/page.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Calendar />
-  </StrictMode>
-);
+    <LoginPage   />
+  </StrictMode>,
+)
+
