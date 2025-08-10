@@ -41,7 +41,7 @@ export default function SignUpPage() {
         setPassword("");
         setConfirmPassword("");
       } else {
-        setError(data.error || "Error! Please try again");
+        setError(data.error || "Username already exists.");
       }
     } catch {
       setError("An error occurred while connecting to the server");
@@ -264,6 +264,11 @@ export default function SignUpPage() {
               </button>
             </div>
           </label>
+
+          {error && (
+            <div style={{ color: "red", marginTop: 8, textAlign: "left", width: "91%", fontFamily: "Inria Serif, serif" }}>{error}</div>
+          )}
+
           <button
             type="submit"
             style={{
@@ -283,9 +288,6 @@ export default function SignUpPage() {
           >
             Sign up
           </button>
-          {error && (
-            <div style={{ color: "red", marginTop: 16, textAlign: "left", width: "100%", fontFamily: "Inria Serif, serif" }}>{error}</div>
-          )}
           {message && (
             <div style={{ color: "green", marginTop: 16, textAlign: "left", width: "90%", fontFamily: "Inria Serif, serif" }}>{message}</div>
           )}
