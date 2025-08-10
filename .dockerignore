@@ -2,3 +2,6 @@
 .env
 dist
 node_modules
+Dockerfile
+docker-compose.yml
+.gitignore
