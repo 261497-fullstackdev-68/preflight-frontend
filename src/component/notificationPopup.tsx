@@ -84,11 +84,6 @@ export function NotificationPopup({
       console.log("Accept success:", result.message);
       fetchShareTodo();
 
-      // --- UI Update Logic ---
-      // You need to update the state in the parent component (NotificationBadge)
-      // to remove this item from the list. This is best done with a callback.
-      // Example: onRemoveNotification(todo.task_id)
-
       alert("Todo accepted successfully!");
     } catch (error) {
       console.error("Error accepting todo:", error);

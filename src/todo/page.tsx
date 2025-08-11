@@ -1,9 +1,19 @@
 import "./todo.css";
 import { useState, useEffect } from "react";
 import dayjs from "dayjs";
+import { NewTodoPopup } from "../component/NewTodoPopup";
 import NotificationBadge from "../component/notificationBadge";
-import { FullTodoPopup, PopupMode } from "../component/fullTodoPopup";
-import type { Todo } from "../component/fullTodoPopup";
+import {
+  FullTodoPopup,
+  PopupMode,
+  type Todo,
+} from "../component/fullTodoPopup";
+import type { AddTodo } from "../component/NewTodoPopup";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Thailand day colors: Sunday=red, Monday=yellow, Tuesday=pink, Wednesday=green, Thursday=orange, Friday=blue, Saturday=purple
 const thaiDayColors = [
@@ -28,9 +38,10 @@ type TodoProps = {
 function TodoPage({ userId }: TodoProps) {
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
-  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Edit);
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
   const startMonth = weekDates[0].format("MMMM");
@@ -50,6 +61,13 @@ function TodoPage({ userId }: TodoProps) {
     setWeekStart(weekStart.subtract(1, "week"));
   };
 
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const handleAddClick = () => {
+    // สร้าง todo ตัวอย่าง
+
+    setIsPopupOpen(true);
+  };
+
   const handleOpenCreatePopup = () => {
     setPopupMode(PopupMode.Create);
     setIsFullTodoPopupOpen(true);
@@ -59,23 +77,93 @@ function TodoPage({ userId }: TodoProps) {
     setIsFullTodoPopupOpen(false);
   };
 
+  const fetchTodo = async () => {
+    if (userId) {
+      const response = await fetch(`/api/todo/${userId}`);
+      const data = await response.json();
+      const shareTodo = await fetchShareTodo();
+      if (shareTodo?.length === 0) {
+        setTodos(data);
+      } else {
+        const task_id_list = shareTodo?.map((item) => item.taskId);
+        const fullShareTodo = await fetchFullShareTodo(task_id_list);
+        const concated = data.concat(fullShareTodo);
+        setTodos(concated);
+      }
+    }
+  };
+
+  const fetchShareTodo = async () => {
+    try {
+      const response = await fetch("/api/todos/shareTodo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (!response.ok) {
+        console.log("failed to fetch notification");
+        return;
+      } else {
+        const todo = await response.json();
+        if (Array.isArray(todo)) {
+          const acceptTodos = todo.filter((t) => t.isAccepted === "True");
+          return acceptTodos;
+        } else {
+          return [];
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchFullShareTodo = async (task_id_list: number[] | undefined) => {
+    if (task_id_list?.length === 0) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/todos/fullTodo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id_list }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch full shared todos.");
+        return;
+      }
+
+      const fullTodos = await response.json();
+      return fullTodos;
+    } catch (err) {
+      console.error("An error occurred:", err);
+    }
+  };
+
   // Fetch todos from the backend when the userId changes
   useEffect(() => {
-    if (userId) {
-      const fetchTodos = async () => {
-        const response = await fetch(`/api/getTodos?userId=${userId}`);
-        const data = await response.json();
-        setTodos(data);
-      };
-      fetchTodos();
-    }
+    fetchTodo();
   }, [userId]);
 
+  useEffect(() => {}, [todos]);
   return (
     <div>
-      <header className="flex items-center mb-4">
-        <h1 className="m-0 text-5xl font-bold">{monthText}</h1>
-      </header>
+      <div className="flex justify-between">
+        <header className="flex items-center mb-4">
+          <h1 className="m-0 text-5xl font-bold">{monthText}</h1>
+        </header>
+        <div
+          className=" top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer"
+          aria-label="Notification"
+        >
+          <NotificationBadge userId={userId} fetchTodo={fetchTodo} />
+        </div>
+      </div>
+      <h1 className="flex items-center mb-4">Hello User {userId}</h1>
       <div className="flex justify-between mb-6">
         <button
           onClick={handlePrevWeek}
@@ -126,15 +214,40 @@ function TodoPage({ userId }: TodoProps) {
               <td className="py-2 border text-center font-semibold">
                 {hour}:00
               </td>
-              {weekDates.map((_, idx) => (
-                <td
-                  key={idx}
-                  className={`py-6 border text-center 
-                  `}
-                >
-                  {/* Cell content here */}
-                </td>
-              ))}
+              {weekDates.map((date, dayIdx) => {
+                const cellTodos = todos.filter((todo) => {
+                  const start = dayjs(todo.startDate);
+                  const end = dayjs(todo.endDate);
+
+                  return (
+                    date.isSame(start, "day") &&
+                    start.hour() <= hour &&
+                    end.hour() >= hour
+                  );
+                });
+
+                return (
+                  <td key={dayIdx} className="py-2 border align-top">
+                    {cellTodos.length === 0 ? null : (
+                      <div className="flex space-x-1 overflow-x-auto">
+                        {cellTodos.map((todo) => (
+                          <button
+                            key={todo.id}
+                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded p-1 text-xs truncate"
+                            onClick={() => (
+                              setSelectedTodo(todo),
+                              setIsFullTodoPopupOpen(true)
+                            )}
+                            title={todo.title}
+                          >
+                            {todo.title}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -142,14 +255,22 @@ function TodoPage({ userId }: TodoProps) {
       <button
         className="fixed bottom-8 right-8 bg-gray-900 hover:bg-blue-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg text-3xl hover:cursor-pointer"
         aria-label="Add"
-        onClick={handleOpenCreatePopup}
+        onClick={handleAddClick}
       >
         +
       </button>
       {/* Place your PNG file in the public folder, e.g. public/notification.png */}
-      <div className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer">
-        <NotificationBadge userId={userId} />
-      </div>
+
+      <NewTodoPopup
+        open={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onCreate={(todo) => {
+          console.log("New Todo Created:", todo);
+        }}
+        userId={userId}
+        fetchTodo={fetchTodo}
+      />
+
       <FullTodoPopup
         open={isFullTodoPopupOpen}
         onClose={handleClosePopup}
@@ -157,6 +278,7 @@ function TodoPage({ userId }: TodoProps) {
         todo={selectedTodo}
         userId={userId}
         fetchShareTodo={async () => {}}
+        fetchTodo={fetchTodo}
       />
     </div>
   );

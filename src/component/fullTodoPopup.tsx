@@ -13,6 +13,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import ShareIcon from "@mui/icons-material/Share";
 import EditIcon from "@mui/icons-material/Edit";
 import { SharePopup } from "./sharePopup";
+import dayjs from "dayjs";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 // You will need to define this interface for your todo data
 export interface Todo {
@@ -39,6 +42,7 @@ interface FullTodoPopupProps {
   mode: PopupMode; // The key prop to control the variant
   todo: Todo | null; // The todo data, only used in 'edit' and 'viewInvited' modes
   fetchShareTodo: () => Promise<void> | null; //fetch only in viewInvited mode
+  fetchTodo: () => Promise<void> | null; //fetch only in viewInvited mode
   userId: number | null;
 }
 
@@ -49,6 +53,7 @@ export function FullTodoPopup({
   todo,
   userId,
   fetchShareTodo,
+  fetchTodo,
 }: FullTodoPopupProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(
@@ -92,17 +97,55 @@ export function FullTodoPopup({
   const handleSharePopupOpen = () => setIsSharePopupOpen(true);
   const handleSharePopupClose = () => setIsSharePopupOpen(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("Saving todo:", localTodo);
-    // Add your save logic here
+
+    try {
+      const response = await fetch("/api/todos/editTodo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(localTodo),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: data.message,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error!",
+          text: data.error || "Failed to save todo.",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "An error occurred while connecting to the server.",
+      });
+    }
+    fetchTodo();
     onClose();
   };
 
-  const handleDelete = () => {
-    console.log("Deleting todo:", localTodo.id);
-    // Add your delete logic here
-    onClose();
-  };
+  function handleDelete() {
+    axios
+      .delete("/api/todo", { data: { id: localTodo.id } })
+      .then(() => {
+        onClose();
+      })
+      .catch((err) => alert(err));
+  }
 
   const handleAccept = async () => {
     try {
@@ -146,6 +189,7 @@ export function FullTodoPopup({
       console.log(err);
     }
   };
+
   const handleDecline = async () => {
     try {
       const response = await fetch("/api/todos/shareTodo", {
@@ -197,12 +241,24 @@ export function FullTodoPopup({
           <Box
             sx={{ display: "flex", justifyContent: "center", gap: 2, pt: 3 }}
           >
-            <Button variant="contained" color="success" onClick={handleSave}>
-              save
-            </Button>
-            <Button variant="contained" color="error" onClick={handleDelete}>
-              delete
-            </Button>
+            {todo?.userId === userId && (
+              <div>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleSave}
+                >
+                  save
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleDelete}
+                >
+                  delete
+                </Button>
+              </div>
+            )}
           </Box>
         );
       case PopupMode.ViewInvited:
@@ -225,13 +281,26 @@ export function FullTodoPopup({
 
   const renderBody = () => {
     if (isEditing) {
-      return (
+      return todo?.userId === userId ? (
         <Box>
+          <TextField
+            fullWidth
+            label="Title"
+            value={localTodo.title}
+            onChange={(e) =>
+              setLocalTodo({ ...localTodo, title: e.target.value })
+            }
+            sx={{ mb: 2 }}
+          />
           <TextField
             fullWidth
             label="Start Date"
             type="datetime-local"
-            value={localTodo.startDate || ""}
+            value={
+              localTodo.startDate
+                ? dayjs(localTodo.startDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
             onChange={(e) =>
               setLocalTodo({ ...localTodo, startDate: e.target.value })
             }
@@ -242,7 +311,11 @@ export function FullTodoPopup({
             fullWidth
             label="End Date"
             type="datetime-local"
-            value={localTodo.endDate || ""}
+            value={
+              localTodo.endDate
+                ? dayjs(localTodo.endDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
             onChange={(e) =>
               setLocalTodo({ ...localTodo, endDate: e.target.value })
             }
@@ -260,14 +333,69 @@ export function FullTodoPopup({
             }
           />
         </Box>
+      ) : (
+        <Box>
+          <TextField
+            fullWidth
+            label="Title"
+            value={localTodo.title}
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Start Date"
+            type="datetime-local"
+            value={
+              localTodo.startDate
+                ? dayjs(localTodo.startDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
+            onChange={(e) =>
+              setLocalTodo({ ...localTodo, startDate: e.target.value })
+            }
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="End Date"
+            type="datetime-local"
+            value={
+              localTodo.endDate
+                ? dayjs(localTodo.endDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
+            InputProps={{
+              readOnly: true,
+            }}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            multiline
+            rows={4}
+            value={localTodo.description}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        </Box>
       );
     } else {
       return (
         <Box>
           <Typography variant="body1" color="text.secondary">
-            Saturday 20th at 05.00 p.m.
+            {localTodo.startDate}
             <br />
-            Sunday 21st at 11:00 p.m.
+            {localTodo.endDate}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
             <EditIcon fontSize="small" sx={{ mr: 1 }} />
@@ -291,9 +419,7 @@ export function FullTodoPopup({
               pb: 2,
             }}
           >
-            <Typography variant="h5" fontWeight="bold">
-              {localTodo.title || "New Todo"}
-            </Typography>
+            <Typography variant="h5" fontWeight="bold"></Typography>
             <Box>
               <IconButton onClick={handleSharePopupOpen}>
                 <ShareIcon />

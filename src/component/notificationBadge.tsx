@@ -19,14 +19,16 @@ export type ShareTodo = {
 
 type NotificationBadgeProps = {
   userId: number | null;
+  fetchTodo: () => Promise<void> | null;
 };
 
-function NotificationBadge({ userId }: NotificationBadgeProps) {
+function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
   const [notificationCount, setNotificationCount] = useState(0);
   const [isListPopupOpen, setIsListPopupOpen] = useState(false);
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.ViewInvited);
+
   const [shareTodo, setShareTodo] = useState<ShareTodo[]>([]);
 
   const fetchShareTodo = async () => {
@@ -69,6 +71,7 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
   };
 
   const handleListPopupClose = () => {
+    fetchTodo();
     setIsListPopupOpen(false);
   };
 
@@ -108,6 +111,7 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
         mode={popupMode}
         userId={userId}
         fetchShareTodo={fetchShareTodo}
+        fetchTodo={async () => {}}
       />
     </>
   );
