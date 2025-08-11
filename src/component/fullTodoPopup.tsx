@@ -236,18 +236,29 @@ export function FullTodoPopup({
   const renderButtons = () => {
     switch (mode) {
       case PopupMode.Create:
-
       case PopupMode.Edit:
         return (
           <Box
             sx={{ display: "flex", justifyContent: "center", gap: 2, pt: 3 }}
           >
-            <Button variant="contained" color="success" onClick={handleSave}>
-              save
-            </Button>
-            <Button variant="contained" color="error" onClick={handleDelete}>
-              delete
-            </Button>
+            {todo?.userId === userId && (
+              <div>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleSave}
+                >
+                  save
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={handleDelete}
+                >
+                  delete
+                </Button>
+              </div>
+            )}
           </Box>
         );
       case PopupMode.ViewInvited:
@@ -270,7 +281,7 @@ export function FullTodoPopup({
 
   const renderBody = () => {
     if (isEditing) {
-      return (
+      return todo?.userId === userId ? (
         <Box>
           <TextField
             fullWidth
@@ -322,14 +333,69 @@ export function FullTodoPopup({
             }
           />
         </Box>
+      ) : (
+        <Box>
+          <TextField
+            fullWidth
+            label="Title"
+            value={localTodo.title}
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Start Date"
+            type="datetime-local"
+            value={
+              localTodo.startDate
+                ? dayjs(localTodo.startDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
+            onChange={(e) =>
+              setLocalTodo({ ...localTodo, startDate: e.target.value })
+            }
+            InputLabelProps={{ shrink: true }}
+            InputProps={{
+              readOnly: true,
+            }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="End Date"
+            type="datetime-local"
+            value={
+              localTodo.endDate
+                ? dayjs(localTodo.endDate).format("YYYY-MM-DDTHH:mm")
+                : ""
+            }
+            InputProps={{
+              readOnly: true,
+            }}
+            InputLabelProps={{ shrink: true }}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Description"
+            multiline
+            rows={4}
+            value={localTodo.description}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        </Box>
       );
     } else {
       return (
         <Box>
           <Typography variant="body1" color="text.secondary">
-            Saturday 20th at 05.00 p.m.
+            {localTodo.startDate}
             <br />
-            Sunday 21st at 11:00 p.m.
+            {localTodo.endDate}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
             <EditIcon fontSize="small" sx={{ mr: 1 }} />
