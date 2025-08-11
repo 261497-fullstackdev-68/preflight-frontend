@@ -12,10 +12,12 @@ import CloseIcon from "@mui/icons-material/Close";
 import ShareIcon from "@mui/icons-material/Share";
 import { SharePopup } from "./sharePopup";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 // Using the Todo interface from a previous conversation
 export interface Todo {
-  taskId: number;
-  userId: number;
+  userId: number | null;
   title: string;
   description: string;
   is_done: boolean;
@@ -30,16 +32,22 @@ interface NewTodoPopupProps {
   onCreate: (todo: {
     title: string;
     description: string;
-    start_date: string;
-    end_date: string;
+    start_date: Date | null;
+    end_date: Date | null;
   }) => void;
+  userId: number | null;
 }
 
-export function NewTodoPopup({ open, onClose, onCreate }: NewTodoPopupProps) {
+export function NewTodoPopup({
+  open,
+  onClose,
+  onCreate,
+  userId,
+}: NewTodoPopupProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   if (!open) return null;
 
@@ -47,9 +55,6 @@ export function NewTodoPopup({ open, onClose, onCreate }: NewTodoPopupProps) {
     e.preventDefault();
 
     try {
-      // สมมุติว่าคุณมี userId จาก context หรือ props
-      const userId = 1; // เปลี่ยนตามจริงที่คุณมี
-
       const response = await fetch("/api/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -127,19 +132,33 @@ export function NewTodoPopup({ open, onClose, onCreate }: NewTodoPopupProps) {
               required
             />
             <div className="flex px-4">
-              <input
-                type="date"
-                className=" border rounded px-3 py-2 mr-3"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+              <DatePicker
+                selected={startDate || undefined} // undefined ถ้ายังไม่ได้เลือก
+                onChange={(date) => setStartDate(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="yyyy-MM-dd HH:mm"
+                className="border rounded px-3 py-2 mr-3"
+                placeholderText="Select start date & time"
+                popperPlacement="bottom-start"
+                withPortal
+                fixedHeight
                 required
               />
-              <Typography sx={{ mt: 1 }}> To </Typography>
-              <input
-                type="date"
-                className=" border rounded px-3 py-2 ml-3"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+              <Typography sx={{ mt: 1 }}>To</Typography>
+              <DatePicker
+                selected={endDate || undefined} // undefined ถ้ายังไม่ได้เลือก
+                onChange={(date) => setEndDate(date)}
+                showTimeSelect
+                timeFormat="HH:mm"
+                timeIntervals={15}
+                dateFormat="yyyy-MM-dd HH:mm"
+                className="border rounded px-3 py-2 mr-3"
+                placeholderText="Select start date & time"
+                popperPlacement="bottom-start"
+                withPortal
+                fixedHeight
                 required
               />
             </div>

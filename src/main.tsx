@@ -1,10 +1,13 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import LoginPage from './login/page.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { UserProvider } from "./UserContext";
+import "./index.css";
+import App from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <LoginPage   />
-  </StrictMode>,
-)
+  <UserProvider>
+    <StrictMode>
+      <App />
+    </StrictMode>
+  </UserProvider>
+);

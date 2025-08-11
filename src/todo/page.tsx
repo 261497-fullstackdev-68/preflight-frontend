@@ -1,8 +1,15 @@
 import "./todo.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { NewTodoPopup } from "../component/NewTodoPopup";
+import NotificationBadge from "../component/notificationBadge";
+import { FullTodoPopup, PopupMode } from "../component/fullTodoPopup";
 import type { Todo } from "../component/NewTodoPopup";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Thailand day colors: Sunday=red, Monday=yellow, Tuesday=pink, Wednesday=green, Thursday=orange, Friday=blue, Saturday=purple
 const thaiDayColors = [
@@ -20,8 +27,26 @@ function getWeekDates(refDate: dayjs.Dayjs) {
   return Array.from({ length: 7 }, (_, i) => startOfWeek.add(i, "day"));
 }
 
-function Todo() {
+type TodoProps = {
+  userId: number | null;
+};
+
+type ResponseTodo = {
+  taskId: number;
+  userId: number;
+  title: string;
+  description: string;
+  is_done: boolean;
+  startDate: Date | null;
+  endDate: Date | null;
+  image_path: string | null;
+};
+
+function TodoPage({ userId }: TodoProps) {
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
+  const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
+  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
+  const [todos, setTodos] = useState<ResponseTodo[]>([]);
 
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
@@ -46,25 +71,53 @@ function Todo() {
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const handleAddClick = () => {
     // สร้าง todo ตัวอย่าง
-    const newTodo: Todo = {
-      taskId: 1,
-      userId: 1,
-      title: "New Todo",
-      description: "รายละเอียดของ todo",
-      is_done: false,
-      start_date: new Date(),
-      end_date: new Date(),
-      image_path: null,
-    };
-    setSelectedTodo(newTodo);
+
     setIsPopupOpen(true);
   };
 
+  const handleOpenCreatePopup = () => {
+    setPopupMode(PopupMode.Create);
+    setIsFullTodoPopupOpen(true);
+  };
+
+  const handleClosePopup = () => {
+    setIsFullTodoPopupOpen(false);
+  };
+
+  // Fetch todos from the backend when the userId changes
+  useEffect(() => {
+    if (userId) {
+      const fetchTodos = async () => {
+        const response = await fetch(`/api/todo/${userId}`);
+        const data = await response.json();
+        setTodos(data);
+      };
+      fetchTodos();
+    }
+  }, [userId]);
+
   return (
     <div>
-      <header className="flex items-center mb-4">
-        <h1 className="m-0 text-5xl font-bold">{monthText}</h1>
-      </header>
+      <div className="flex justify-between">
+        <header className="flex items-center mb-4">
+          <h1 className="m-0 text-5xl font-bold">{monthText}</h1>
+        </header>
+        <button
+          className=" top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer"
+          aria-label="Notification"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M4 8a6 6 0 0 1 4.03-5.67a2 2 0 1 1 3.95 0A6 6 0 0 1 16 8v6l3 2v1H1v-1l3-2zm8 10a2 2 0 1 1-4 0z" />
+          </svg>
+        </button>
+      </div>
+      <h1 className="flex items-center mb-4">Hello User {userId}</h1>
       <div className="flex justify-between mb-6">
         <button
           onClick={handlePrevWeek}
@@ -115,15 +168,37 @@ function Todo() {
               <td className="py-2 border text-center font-semibold">
                 {hour}:00
               </td>
-              {weekDates.map((_, idx) => (
-                <td
-                  key={idx}
-                  className={`py-6 border text-center 
-                  `}
-                >
-                  {/* Cell content here */}
-                </td>
-              ))}
+              {weekDates.map((date, dayIdx) => {
+                const cellTodos = todos.filter((todo) => {
+                  const start = dayjs(todo.startDate);
+                  const end = dayjs(todo.endDate);
+
+                  return (
+                    date.isSame(start, "day") &&
+                    start.hour() <= hour &&
+                    end.hour() >= hour
+                  );
+                });
+
+                return (
+                  <td key={dayIdx} className="py-2 border align-top">
+                    {cellTodos.length === 0 ? null : (
+                      <div className="flex space-x-1 overflow-x-auto">
+                        {cellTodos.map((todo) => (
+                          <button
+                            key={todo.taskId}
+                            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded p-1 text-xs truncate"
+                            onClick={() => alert(`Task: ${todo.title}`)}
+                            title={todo.title}
+                          >
+                            {todo.title}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -136,20 +211,6 @@ function Todo() {
         +
       </button>
       {/* Place your PNG file in the public folder, e.g. public/notification.png */}
-      <button
-        className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer"
-        aria-label="Notification"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="28"
-          height="28"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path d="M4 8a6 6 0 0 1 4.03-5.67a2 2 0 1 1 3.95 0A6 6 0 0 1 16 8v6l3 2v1H1v-1l3-2zm8 10a2 2 0 1 1-4 0z" />
-        </svg>
-      </button>
 
       <NewTodoPopup
         open={isPopupOpen}
@@ -157,9 +218,10 @@ function Todo() {
         onCreate={(todo) => {
           console.log("New Todo Created:", todo);
         }}
+        userId={userId}
       />
     </div>
   );
 }
 
-export default Todo;
+export default TodoPage;
