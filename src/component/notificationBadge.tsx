@@ -1,5 +1,5 @@
 // src/components/NotificationBadge.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Badge from "@mui/material/Badge";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { IconButton } from "@mui/material";
@@ -31,7 +31,7 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
 
   const fetchShareTodo = async () => {
     try {
-      const response = await fetch("/todos", {
+      const response = await fetch("/api/todos/shareTodo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -44,8 +44,12 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
         return;
       } else {
         const todo = await response.json();
-        const pendingTodos = todo.filter((t) => t.isAccepted === "Pending");
-        setShareTodo(pendingTodos);
+        if (Array.isArray(todo)) {
+          const pendingTodos = todo.filter((t) => t.isAccepted === "Pending");
+          setShareTodo(pendingTodos);
+        } else {
+          setShareTodo([]);
+        }
       }
     } catch (err) {
       console.log(err);
@@ -54,8 +58,11 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
 
   useEffect(() => {
     fetchShareTodo();
-    setNotificationCount(shareTodo.length);
   }, []);
+
+  useEffect(() => {
+    setNotificationCount(shareTodo.length);
+  }, [shareTodo]);
 
   const handleListPopupOpen = () => {
     setIsListPopupOpen(true);
@@ -89,8 +96,9 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
       <NotificationPopup
         open={isListPopupOpen}
         onClose={handleListPopupClose}
-        notifications={shareTodo}
+        shareTodos={shareTodo}
         onSelectNotification={handleNotificationSelect}
+        fetchShareTodo={fetchShareTodo}
       />
       {/* Renders the full todo popup */}
       <FullTodoPopup
@@ -98,6 +106,8 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
         onClose={handleFullTodoPopupClose}
         todo={selectedTodo}
         mode={popupMode}
+        userId={userId}
+        fetchShareTodo={fetchShareTodo}
       />
     </>
   );

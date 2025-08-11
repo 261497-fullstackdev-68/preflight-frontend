@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import LoginPage from './login/page.tsx';
+import LoginPage from "./login/page.tsx";
 import TodoPage from "./todo/page.tsx";
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
         // Pass the function down as a prop to the login page
         <LoginPage onLogin={handleLoginSuccess} />
       )}
-    </> 
+    </>
   );
 }
 

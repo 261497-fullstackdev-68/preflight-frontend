@@ -31,7 +31,6 @@ function TodoPage({ userId }: TodoProps) {
   const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
-
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
   const startMonth = weekDates[0].format("MMMM");
@@ -149,13 +148,15 @@ function TodoPage({ userId }: TodoProps) {
       </button>
       {/* Place your PNG file in the public folder, e.g. public/notification.png */}
       <div className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer">
-        <NotificationBadge />
+        <NotificationBadge userId={userId} />
       </div>
       <FullTodoPopup
         open={isFullTodoPopupOpen}
         onClose={handleClosePopup}
         mode={popupMode}
         todo={selectedTodo}
+        userId={userId}
+        fetchShareTodo={async () => {}}
       />
     </div>
   );
