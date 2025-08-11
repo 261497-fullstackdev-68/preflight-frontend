@@ -4,13 +4,21 @@ import bgImage from "../assets/bgImage.png";
 import bgloginFull from "../assets/bglogin_full.png"; // ตรวจสอบ path ให้ถูกต้อง
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai"; // เพิ่ม import icons
 
-export default function LoginPage() {
+type LoginPageProps = {
+  onLogin: (user_id: number) => void;
+};
+
+export default function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
+
+  const handleSignUpSuccess = () => {
+    setShowSignUp(false);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +43,7 @@ export default function LoginPage() {
         setMessage(data.message || "เข้าสู่ระบบสำเร็จ");
         setUsername("");
         setPassword("");
+        onLogin(data.user_id);
       } else {
         setError(data.error || "Incorrect username or password");
       }
@@ -46,7 +55,7 @@ export default function LoginPage() {
   if (showSignUp) {
     return (
       <div>
-        <SignUpPage />
+        <SignUpPage onSignUpSuccess={handleSignUpSuccess} />
       </div>
     );
   }
@@ -70,29 +79,29 @@ export default function LoginPage() {
       {/* กล่องรูป bglogin */}
       <div
         style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundImage: `url(${bgloginFull})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-            zIndex: 1,
-            padding: 40,
-            borderRadius: 10,
-            boxShadow: "0 0 15px rgba(0,0,0,0.3)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            width: "900px",        // เพิ่มความกว้าง
-            maxWidth: "98vw",      // จำกัดความกว้างสูงสุด
-            minWidth: "400px",     // เพิ่มความกว้างขั้นต่ำ
-            maxHeight: "95vh",
-            minHeight: "500px",
-            overflow: "auto",
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundImage: `url(${bgloginFull})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          zIndex: 1,
+          padding: 40,
+          borderRadius: 10,
+          boxShadow: "0 0 15px rgba(0,0,0,0.3)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          width: "900px", // เพิ่มความกว้าง
+          maxWidth: "98vw", // จำกัดความกว้างสูงสุด
+          minWidth: "400px", // เพิ่มความกว้างขั้นต่ำ
+          maxHeight: "95vh",
+          minHeight: "500px",
+          overflow: "auto",
         }}
-    >
+      >
         <h2
           style={{
             color: "#000",
@@ -107,7 +116,16 @@ export default function LoginPage() {
         >
           Log In
         </h2>
-        <form onSubmit={handleLogin} style={{ width: "80%", display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "flex-end" }}>
+        <form
+          onSubmit={handleLogin}
+          style={{
+            width: "80%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
+          }}
+        >
           <label
             style={{
               display: "flex",
@@ -148,63 +166,85 @@ export default function LoginPage() {
           {/* Password input with eye icon */}
           <label
             style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              marginBottom: 12,
+              marginTop: 8,
+              color: "#000",
+              textAlign: "left",
+              width: "50%",
+              fontSize: 20,
+              fontFamily: "Inria Serif, serif",
+            }}
+          >
+            Password
+            <div
+              style={{
+                width: "100%",
                 position: "relative",
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                marginBottom: 12,
-                marginTop: 8,
-                color: "#000",
-                textAlign: "left",
-                width: "50%",
-                fontSize: 20,
-                fontFamily: "Inria Serif, serif",
-            }}
+                alignItems: "center",
+              }}
             >
-            Password
-            <div style={{ width: "100%", position: "relative", display: "flex", alignItems: "center" }}>
-                <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={{
-                    width: "100%",
-                    alignSelf: "flex-end",
-                    padding: "12px 40px 12px 12px",  // เพิ่ม paddingRight เพื่อเว้นที่ปุ่มตา
-                    marginTop: 4,
-                    borderRadius: 8,
-                    border: "1px solid #bdbdbd",
-                    fontSize: "1.1rem",
-                    background: "#fff",
-                    color: "#333",
-                    outline: "none",
-                    boxSizing: "border-box",
-                    fontFamily: "Inria Serif, serif",
-                    }}
-                />
-                <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    style={{
-                        position: "absolute",
-                        right: 10,
-                        top: 16,
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 22,
-                        padding: 0,
-                    }}
-                    tabIndex={-1}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                {showPassword ? <AiFillEye color="black" /> : <AiFillEyeInvisible color="black" />}
-                </button>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  alignSelf: "flex-end",
+                  padding: "12px 40px 12px 12px", // เพิ่ม paddingRight เพื่อเว้นที่ปุ่มตา
+                  marginTop: 4,
+                  borderRadius: 8,
+                  border: "1px solid #bdbdbd",
+                  fontSize: "1.1rem",
+                  background: "#fff",
+                  color: "#333",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  fontFamily: "Inria Serif, serif",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: 16,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 22,
+                  padding: 0,
+                }}
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <AiFillEye color="black" />
+                ) : (
+                  <AiFillEyeInvisible color="black" />
+                )}
+              </button>
             </div>
           </label>
 
-          {error && <p style={{ color: "red", marginTop: 8 ,textAlign: "left", width: "38%" }}>{error}</p>}  
+          {error && (
+            <p
+              style={{
+                color: "red",
+                marginTop: 8,
+                textAlign: "left",
+                width: "38%",
+              }}
+            >
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
@@ -225,9 +265,16 @@ export default function LoginPage() {
             log in
           </button>
         </form>
-        
 
-        <p style={{ marginTop: 55, color: "#000", textAlign: "right", width: "65%", fontSize: 18 }}>
+        <p
+          style={{
+            marginTop: 55,
+            color: "#000",
+            textAlign: "right",
+            width: "65%",
+            fontSize: 18,
+          }}
+        >
           Don’t have account?{" "}
           <button
             onClick={() => setShowSignUp(true)}

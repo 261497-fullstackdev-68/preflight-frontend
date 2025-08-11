@@ -13,11 +13,13 @@ import {
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
 import type { Todo } from "./fullTodoPopup";
+import type { ShareTodo } from "./notificationBadge";
+
 
 interface NotificationPopupProps {
   open: boolean;
   onClose: () => void;
-  notifications: Todo[];
+  notifications: ShareTodo[];
   onSelectNotification: (todo: Todo) => void;
 }
 
@@ -27,6 +29,7 @@ export function NotificationPopup({
   notifications,
   onSelectNotification,
 }: NotificationPopupProps) {
+  
   const handleAccept = async (e: React.MouseEvent, todo: Todo) => {
     e.stopPropagation();
     console.log(`Accepted todo: ${todo.title}`);

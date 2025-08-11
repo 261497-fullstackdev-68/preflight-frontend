@@ -9,7 +9,19 @@ import { NotificationPopup } from "./notificationPopup";
 import { FullTodoPopup, PopupMode } from "./fullTodoPopup";
 import type { Todo } from "./fullTodoPopup";
 
-function NotificationBadge() {
+export type ShareTodo = {
+  id: number;
+  taskId: number;
+  shareWith: number;
+  createdAt: Date;
+  isAccepted: "Pending" | "Accepted" | "Rejected";
+};
+
+type NotificationBadgeProps = {
+  userId: number | null;
+};
+
+function NotificationBadge({ userId }: NotificationBadgeProps) {
   const [notificationCount, setNotificationCount] = useState(0);
   const [isListPopupOpen, setIsListPopupOpen] = useState(false);
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
@@ -39,9 +51,34 @@ function NotificationBadge() {
       image_path: null,
     },
   ];
+  const [shareTodo, setShareTodo] = useState<ShareTodo[]>([]);
+
+  const fetchShareTodo = async () => {
+    try {
+      const response = await fetch("/todos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (!response.ok) {
+        console.log("failed to fetch notification");
+        return;
+      } else {
+        const todo = await response.json();
+        const pendingTodos = todo.filter((t) => t.isAccepted === "Pending");
+        setShareTodo(pendingTodos);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   useEffect(() => {
-    setNotificationCount(mockTodos.length);
+    fetchShareTodo();
+    setNotificationCount(shareTodo.length);
   }, []);
 
   const handleListPopupOpen = () => {
@@ -76,7 +113,7 @@ function NotificationBadge() {
       <NotificationPopup
         open={isListPopupOpen}
         onClose={handleListPopupClose}
-        notifications={mockTodos}
+        notifications={shareTodo}
         onSelectNotification={handleNotificationSelect}
       />
       {/* Renders the full todo popup */}

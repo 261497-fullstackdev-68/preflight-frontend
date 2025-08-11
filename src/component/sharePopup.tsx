@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,11 +12,12 @@ import {
 import Grid from "@mui/material/Grid";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
+import Swal from "sweetalert2";
 
 // Define the User interface based on the mock data
 export interface User {
   id: number;
-  name: string;
+  username: string;
 }
 
 interface SharePopupProps {
@@ -24,35 +25,53 @@ interface SharePopupProps {
   onClose: () => void;
 }
 
-// Mock data for the users
-const mockUsers: User[] = [
-  { id: 1, name: "NMBxNIGHT" },
-  { id: 2, name: "Natwa" },
-  { id: 3, name: "Winney" },
-  { id: 4, name: "J" },
-  { id: 5, name: "P" },
-  { id: 6, name: "N" },
-];
-
 export function SharePopup({ open, onClose }: SharePopupProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
 
-  const filteredUsers = mockUsers.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = allUsers.filter((user) =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleUserClick = (user: User) => {
-    console.log(`Share to ${user.name}`);
+    console.log(`Share to ${user.username}`);
     const isSelected = selectedUsers.includes(user.id);
     if (isSelected) {
       setSelectedUsers(selectedUsers.filter((id) => id !== user.id));
     } else {
       setSelectedUsers([...selectedUsers, user.id]);
     }
-    console.log(`Share to ${user.name}`);
+    console.log(`Share to ${user.username}`);
     // You would likely trigger your actual sharing logic here
   };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("api/users");
+
+      if (!res.ok) {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Failed to fetch users.",
+        });
+      } else {
+        const users = await res.json();
+        setAllUsers(users);
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "An error occurred while connecting to the server.",
+      });
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -102,7 +121,7 @@ export function SharePopup({ open, onClose }: SharePopupProps) {
               >
                 <Avatar sx={{ width: 56, height: 56, mx: "auto", mb: 1 }} />
                 <Typography variant="body2" noWrap>
-                  {user.name}
+                  {user.username}
                 </Typography>
 
                 {selectedUsers.includes(user.id) && (
