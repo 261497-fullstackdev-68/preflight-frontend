@@ -19,38 +19,16 @@ export type ShareTodo = {
 
 type NotificationBadgeProps = {
   userId: number | null;
+  fetchTodo: () => Promise<void> | null;
 };
 
-function NotificationBadge({ userId }: NotificationBadgeProps) {
+function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
   const [notificationCount, setNotificationCount] = useState(0);
   const [isListPopupOpen, setIsListPopupOpen] = useState(false);
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.ViewInvited);
 
-  // Use the full Todo mock data now
-  const mockTodos: Todo[] = [
-    {
-      task_id: 1,
-      user_id: 1,
-      title: "Cocktail concert",
-      description: "ต้องไปรับบัตรเข้างานที่แอร์พอร์ตก่อน",
-      is_done: false,
-      start_date: new Date("2025-08-20T17:00:00"),
-      end_date: new Date("2025-08-21T23:00:00"),
-      image_path: null,
-    },
-    {
-      task_id: 2,
-      user_id: 1,
-      title: "ประชุมกิจกกรรม",
-      description: "รายละเอียดการประชุมประจำเดือน",
-      is_done: false,
-      start_date: new Date("2025-08-25T10:00:00"),
-      end_date: new Date("2025-08-25T12:00:00"),
-      image_path: null,
-    },
-  ];
   const [shareTodo, setShareTodo] = useState<ShareTodo[]>([]);
 
   const fetchShareTodo = async () => {
@@ -93,6 +71,7 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
   };
 
   const handleListPopupClose = () => {
+    fetchTodo();
     setIsListPopupOpen(false);
   };
 
@@ -132,6 +111,7 @@ function NotificationBadge({ userId }: NotificationBadgeProps) {
         mode={popupMode}
         userId={userId}
         fetchShareTodo={fetchShareTodo}
+        fetchTodo={async () => {}}
       />
     </>
   );

@@ -36,6 +36,7 @@ interface NewTodoPopupProps {
     end_date: Date | null;
   }) => void;
   userId: number | null;
+  fetchTodo: () => Promise<void> | null;
 }
 
 export function NewTodoPopup({
@@ -43,6 +44,7 @@ export function NewTodoPopup({
   onClose,
   onCreate,
   userId,
+  fetchTodo,
 }: NewTodoPopupProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -77,6 +79,7 @@ export function NewTodoPopup({
 
       const data = await response.json();
       console.log("Created todo:", data);
+      fetchTodo();
 
       // เรียก onCreate เพื่ออัปเดตข้อมูลใน parent component
       onCreate({

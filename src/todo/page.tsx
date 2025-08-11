@@ -77,38 +77,91 @@ function TodoPage({ userId }: TodoProps) {
     setIsFullTodoPopupOpen(false);
   };
 
+  const fetchTodo = async () => {
+    if (userId) {
+      const response = await fetch(`/api/todo/${userId}`);
+      const data = await response.json();
+      const shareTodo = await fetchShareTodo();
+      if (shareTodo?.length === 0) {
+        setTodos(data);
+      } else {
+        const task_id_list = shareTodo?.map((item) => item.taskId);
+        const fullShareTodo = await fetchFullShareTodo(task_id_list);
+        const concated = data.concat(fullShareTodo);
+        setTodos(concated);
+      }
+    }
+  };
+
+  const fetchShareTodo = async () => {
+    try {
+      const response = await fetch("/api/todos/shareTodo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (!response.ok) {
+        console.log("failed to fetch notification");
+        return;
+      } else {
+        const todo = await response.json();
+        if (Array.isArray(todo)) {
+          const acceptTodos = todo.filter((t) => t.isAccepted === "True");
+          return acceptTodos;
+        } else {
+          return [];
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchFullShareTodo = async (task_id_list: number[] | undefined) => {
+    if (task_id_list?.length === 0) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/todos/fullTodo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task_id_list }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to fetch full shared todos.");
+        return;
+      }
+
+      const fullTodos = await response.json();
+      return fullTodos;
+    } catch (err) {
+      console.error("An error occurred:", err);
+    }
+  };
+
   // Fetch todos from the backend when the userId changes
   useEffect(() => {
-    if (userId) {
-      const fetchTodos = async () => {
-        const response = await fetch(`/api/todo/${userId}`);
-        const data = await response.json();
-        setTodos(data);
-      };
-      fetchTodos();
-    }
+    fetchTodo();
   }, [userId]);
 
+  useEffect(() => {}, [todos]);
   return (
     <div>
       <div className="flex justify-between">
         <header className="flex items-center mb-4">
           <h1 className="m-0 text-5xl font-bold">{monthText}</h1>
         </header>
-        <button
+        <div
           className=" top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer"
           aria-label="Notification"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="28"
-            height="28"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path d="M4 8a6 6 0 0 1 4.03-5.67a2 2 0 1 1 3.95 0A6 6 0 0 1 16 8v6l3 2v1H1v-1l3-2zm8 10a2 2 0 1 1-4 0z" />
-          </svg>
-        </button>
+          <NotificationBadge userId={userId} fetchTodo={fetchTodo} />
+        </div>
       </div>
       <h1 className="flex items-center mb-4">Hello User {userId}</h1>
       <div className="flex justify-between mb-6">
@@ -215,10 +268,9 @@ function TodoPage({ userId }: TodoProps) {
           console.log("New Todo Created:", todo);
         }}
         userId={userId}
+        fetchTodo={fetchTodo}
       />
-      <div className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer">
-        <NotificationBadge userId={userId} />
-      </div>
+
       <FullTodoPopup
         open={isFullTodoPopupOpen}
         onClose={handleClosePopup}
@@ -226,6 +278,7 @@ function TodoPage({ userId }: TodoProps) {
         todo={selectedTodo}
         userId={userId}
         fetchShareTodo={async () => {}}
+        fetchTodo={fetchTodo}
       />
     </div>
   );

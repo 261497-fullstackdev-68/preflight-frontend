@@ -14,6 +14,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import EditIcon from "@mui/icons-material/Edit";
 import { SharePopup } from "./sharePopup";
 import dayjs from "dayjs";
+import Swal from "sweetalert2";
 
 // You will need to define this interface for your todo data
 export interface Todo {
@@ -40,6 +41,7 @@ interface FullTodoPopupProps {
   mode: PopupMode; // The key prop to control the variant
   todo: Todo | null; // The todo data, only used in 'edit' and 'viewInvited' modes
   fetchShareTodo: () => Promise<void> | null; //fetch only in viewInvited mode
+  fetchTodo: () => Promise<void> | null; //fetch only in viewInvited mode
   userId: number | null;
 }
 
@@ -50,6 +52,7 @@ export function FullTodoPopup({
   todo,
   userId,
   fetchShareTodo,
+  fetchTodo,
 }: FullTodoPopupProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(
@@ -93,9 +96,44 @@ export function FullTodoPopup({
   const handleSharePopupOpen = () => setIsSharePopupOpen(true);
   const handleSharePopupClose = () => setIsSharePopupOpen(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("Saving todo:", localTodo);
-    // Add your save logic here
+
+    try {
+      const response = await fetch("/api/todos/editTodo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(localTodo),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: data.message,
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error!",
+          text: data.error || "Failed to save todo.",
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "An error occurred while connecting to the server.",
+      });
+    }
+    fetchTodo();
     onClose();
   };
 
@@ -147,6 +185,7 @@ export function FullTodoPopup({
       console.log(err);
     }
   };
+
   const handleDecline = async () => {
     try {
       const response = await fetch("/api/todos/shareTodo", {
