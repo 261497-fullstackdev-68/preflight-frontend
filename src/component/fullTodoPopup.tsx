@@ -14,6 +14,7 @@ import ShareIcon from "@mui/icons-material/Share";
 import EditIcon from "@mui/icons-material/Edit";
 import { SharePopup } from "./sharePopup";
 import dayjs from "dayjs";
+import axios from "axios";
 import Swal from "sweetalert2";
 
 // You will need to define this interface for your todo data
@@ -137,11 +138,14 @@ export function FullTodoPopup({
     onClose();
   };
 
-  const handleDelete = () => {
-    console.log("Deleting todo:", localTodo.id);
-    // Add your delete logic here
-    onClose();
-  };
+  function handleDelete() {
+    axios
+      .delete("/api/todo", { data: { id: localTodo.id } })
+      .then(() => {
+        onClose();
+      })
+      .catch((err) => alert(err));
+  }
 
   const handleAccept = async () => {
     try {
@@ -232,6 +236,7 @@ export function FullTodoPopup({
   const renderButtons = () => {
     switch (mode) {
       case PopupMode.Create:
+
       case PopupMode.Edit:
         return (
           <Box
