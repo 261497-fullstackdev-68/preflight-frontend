@@ -14,12 +14,10 @@ export default function SignUpPage({ onSignUpSuccess }: SignUpPageProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
     setError(null);
 
     if (!username.trim() || !password.trim() || !confirmPassword.trim()) {
@@ -41,7 +39,6 @@ export default function SignUpPage({ onSignUpSuccess }: SignUpPageProps) {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage("Registration successful!");
         setUsername("");
         setPassword("");
         setConfirmPassword("");

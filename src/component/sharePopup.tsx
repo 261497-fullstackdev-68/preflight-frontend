@@ -8,8 +8,9 @@ import {
   InputAdornment,
   Avatar,
   Typography,
+  Grid,
 } from "@mui/material";
-import Grid from "@mui/material/Grid";
+import type { GridProps } from '@mui/material';
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
 import Swal from "sweetalert2";
@@ -26,6 +27,13 @@ interface SharePopupProps {
   userId: number | null;
   task_id: number | null | undefined;
 }
+
+const gridItemProps: GridProps = {
+    item: true,
+    xs: 4,
+    sm: 3,
+    md: 2,
+  } as GridProps;
 
 export function SharePopup({
   open,
@@ -138,7 +146,7 @@ export function SharePopup({
         />
         <Grid container spacing={2}>
           {filteredUsers.map((user) => (
-            <Grid item xs={4} sm={3} md={2} key={user.id}>
+            <Grid {...gridItemProps} key={user.id.toString()}>
               <Box
                 onClick={() => handleUserClick(user)}
                 sx={{

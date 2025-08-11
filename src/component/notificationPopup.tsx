@@ -21,6 +21,7 @@ interface NotificationPopupProps {
   shareTodos: ShareTodo[];
   onSelectNotification: (todo: Todo) => void;
   fetchShareTodo: () => void;
+  fetchTodo: () => void;
 }
 
 export function NotificationPopup({
@@ -29,6 +30,7 @@ export function NotificationPopup({
   shareTodos,
   onSelectNotification,
   fetchShareTodo,
+  fetchTodo,
 }: NotificationPopupProps) {
   const [fullShareTodo, setFullShareTodo] = useState<Todo[]>([]);
   const fetchFullShareTodo = async () => {
@@ -83,6 +85,7 @@ export function NotificationPopup({
       const result = await response.json();
       console.log("Accept success:", result.message);
       fetchShareTodo();
+      fetchTodo();
 
       alert("Todo accepted successfully!");
     } catch (error) {
@@ -117,6 +120,7 @@ export function NotificationPopup({
       const result = await response.json();
       console.log("decline success:", result.message);
       fetchShareTodo();
+      fetchTodo();
 
       alert("Todo decline successfully!");
     } catch (error) {

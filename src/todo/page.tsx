@@ -5,10 +5,8 @@ import { NewTodoPopup } from "../component/NewTodoPopup";
 import NotificationBadge from "../component/notificationBadge";
 import {
   FullTodoPopup,
-  PopupMode,
   type Todo,
 } from "../component/fullTodoPopup";
-import type { AddTodo } from "../component/NewTodoPopup";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
@@ -38,9 +36,9 @@ type TodoProps = {
 function TodoPage({ userId }: TodoProps) {
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
-  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Edit);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
+  const popupMode = "edit"
 
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
@@ -63,14 +61,7 @@ function TodoPage({ userId }: TodoProps) {
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const handleAddClick = () => {
-    // สร้าง todo ตัวอย่าง
-
     setIsPopupOpen(true);
-  };
-
-  const handleOpenCreatePopup = () => {
-    setPopupMode(PopupMode.Create);
-    setIsFullTodoPopupOpen(true);
   };
 
   const handleClosePopup = () => {

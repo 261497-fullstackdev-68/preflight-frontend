@@ -1,12 +1,9 @@
-// src/components/NotificationBadge.jsx
 import { useEffect, useState } from "react";
 import Badge from "@mui/material/Badge";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { IconButton } from "@mui/material";
-
-// Import the new popup component and its interface
 import { NotificationPopup } from "./notificationPopup";
-import { FullTodoPopup, PopupMode } from "./fullTodoPopup";
+import { FullTodoPopup } from "./fullTodoPopup";
 import type { Todo } from "./fullTodoPopup";
 
 export type ShareTodo = {
@@ -27,7 +24,7 @@ function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
   const [isListPopupOpen, setIsListPopupOpen] = useState(false);
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
-  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.ViewInvited);
+  const popupMode = "viewInvited";
 
   const [shareTodo, setShareTodo] = useState<ShareTodo[]>([]);
 
@@ -60,13 +57,14 @@ function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
 
   useEffect(() => {
     fetchShareTodo();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     setNotificationCount(shareTodo.length);
   }, [shareTodo]);
 
   const handleListPopupOpen = () => {
+    fetchShareTodo();
     setIsListPopupOpen(true);
   };
 
@@ -75,16 +73,16 @@ function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
     setIsListPopupOpen(false);
   };
 
-  // This handler is called when an item is clicked in the list popup
   const handleNotificationSelect = (todo: Todo) => {
     setSelectedTodo(todo);
-    setIsListPopupOpen(false); // Close the list popup
-    setIsFullTodoPopupOpen(true); // Open the full todo popup
-    setPopupMode(PopupMode.ViewInvited);
+    fetchShareTodo();
+    setIsListPopupOpen(false);
+    setIsFullTodoPopupOpen(true);
   };
 
   const handleFullTodoPopupClose = () => {
     setIsFullTodoPopupOpen(false);
+    fetchShareTodo();
     setSelectedTodo(null);
   };
 
@@ -102,6 +100,7 @@ function NotificationBadge({ userId, fetchTodo }: NotificationBadgeProps) {
         shareTodos={shareTodo}
         onSelectNotification={handleNotificationSelect}
         fetchShareTodo={fetchShareTodo}
+        fetchTodo={fetchTodo}
       />
       {/* Renders the full todo popup */}
       <FullTodoPopup

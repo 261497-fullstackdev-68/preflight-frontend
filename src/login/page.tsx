@@ -12,7 +12,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showSignUp, setShowSignUp] = useState(false);
 
@@ -23,7 +22,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setMessage(null);
 
     if (!username.trim() || !password.trim()) {
       setError("Enter your username and password");
@@ -40,7 +38,6 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
 
       if (response.ok) {
         // ทำสิ่งที่ต้องการเมื่อ login สำเร็จ
-        setMessage(data.message || "เข้าสู่ระบบสำเร็จ");
         setUsername("");
         setPassword("");
         onLogin(data.userId);

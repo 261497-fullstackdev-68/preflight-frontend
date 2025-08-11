@@ -1,4 +1,3 @@
-// src/components/FullTodoPopup.jsx
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -17,7 +16,6 @@ import dayjs from "dayjs";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-// You will need to define this interface for your todo data
 export interface Todo {
   id: number | null;
   userId: number;
@@ -29,17 +27,12 @@ export interface Todo {
   imagePath: string | null;
 }
 
-// Use an enum to define the three modes
-export enum PopupMode {
-  Create = "create",
-  Edit = "edit",
-  ViewInvited = "viewInvited",
-}
+
 
 interface FullTodoPopupProps {
   open: boolean;
   onClose: () => void;
-  mode: PopupMode; // The key prop to control the variant
+  mode: "create" | "edit" | "viewInvited"; // The key prop to control the variant
   todo: Todo | null; // The todo data, only used in 'edit' and 'viewInvited' modes
   fetchShareTodo: () => Promise<void> | null; //fetch only in viewInvited mode
   fetchTodo: () => Promise<void> | null; //fetch only in viewInvited mode
@@ -57,7 +50,7 @@ export function FullTodoPopup({
 }: FullTodoPopupProps) {
   const [isSharePopupOpen, setIsSharePopupOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(
-    mode === PopupMode.Create || mode === PopupMode.Edit
+    mode === "create" || mode === "edit"
   );
 
   const [localTodo, setLocalTodo] = useState<Todo>(
@@ -75,21 +68,11 @@ export function FullTodoPopup({
 
   useEffect(() => {
     if (open) {
-      if (mode === PopupMode.Create) {
-        setLocalTodo({
-          id: null,
-          userId: 1,
-          title: "",
-          description: "",
-          isDone: false,
-          startDate: null,
-          endDate: null,
-          imagePath: null,
-        });
+      if (mode === "create") {
         setIsEditing(true);
       } else {
         setLocalTodo(todo || localTodo);
-        setIsEditing(mode === PopupMode.Edit);
+        setIsEditing(mode === "edit");
       }
     }
   }, [open, mode, todo]);
@@ -235,8 +218,8 @@ export function FullTodoPopup({
 
   const renderButtons = () => {
     switch (mode) {
-      case PopupMode.Create:
-      case PopupMode.Edit:
+      case "create":
+      case "edit":
         return (
           <Box
             sx={{ display: "flex", justifyContent: "center", gap: 2, pt: 3 }}
@@ -261,7 +244,7 @@ export function FullTodoPopup({
             )}
           </Box>
         );
-      case PopupMode.ViewInvited:
+      case "viewInvited":
         return (
           <Box
             sx={{ display: "flex", justifyContent: "center", gap: 2, pt: 3 }}
