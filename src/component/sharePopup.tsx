@@ -23,9 +23,16 @@ export interface User {
 interface SharePopupProps {
   open: boolean;
   onClose: () => void;
+  userId: number | null;
+  task_id: number | null | undefined;
 }
 
-export function SharePopup({ open, onClose }: SharePopupProps) {
+export function SharePopup({
+  open,
+  onClose,
+  userId,
+  task_id,
+}: SharePopupProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -34,47 +41,72 @@ export function SharePopup({ open, onClose }: SharePopupProps) {
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleUserClick = (user: User) => {
+  const handleUserClick = async (user: User) => {
     console.log(`Share to ${user.username}`);
-    const isSelected = selectedUsers.includes(user.id);
-    if (isSelected) {
-      setSelectedUsers(selectedUsers.filter((id) => id !== user.id));
-    } else {
-      setSelectedUsers([...selectedUsers, user.id]);
-    }
-    console.log(`Share to ${user.username}`);
-    // You would likely trigger your actual sharing logic here
-  };
 
-  const fetchUsers = async () => {
     try {
-      const res = await fetch("api/users");
+      const response = await fetch("/api/shareTodo/withOthers", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ task_id: task_id, share_with: user.id }),
+      });
 
-      if (!res.ok) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Failed to fetch users.",
-        });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error);
+        return;
+      }
+
+      alert(data.message);
+      const isSelected = selectedUsers.includes(user.id);
+      if (isSelected) {
+        setSelectedUsers(selectedUsers.filter((id) => id !== user.id));
       } else {
-        const users = await res.json();
-        setAllUsers(users);
+        setSelectedUsers([...selectedUsers, user.id]);
       }
     } catch (err) {
       console.log(err);
-      Swal.fire({
-        icon: "error",
-        title: "Network Error",
-        text: "An error occurred while connecting to the server.",
-      });
     }
   };
+
+  const handleClose = () => {
+    setSearchTerm("");
+    setSelectedUsers([]);
+    onClose();
+  };
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch("api/users");
+
+        if (!res.ok) {
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Failed to fetch users.",
+          });
+        } else {
+          const users = await res.json();
+          const withoutMe = users.filter((t: User) => t.id !== userId);
+          setAllUsers(withoutMe);
+        }
+      } catch (err) {
+        console.log(err);
+        Swal.fire({
+          icon: "error",
+          title: "Network Error",
+          text: "An error occurred while connecting to the server.",
+        });
+      }
+    };
     fetchUsers();
-  }, []);
+  }, [open, userId]);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle
         sx={{
           display: "flex",
@@ -85,7 +117,7 @@ export function SharePopup({ open, onClose }: SharePopupProps) {
         <Typography variant="h5" fontWeight="bold">
           Share with others
         </Typography>
-        <IconButton onClick={onClose}>
+        <IconButton onClick={handleClose}>
           <CloseIcon />
         </IconButton>
       </DialogTitle>

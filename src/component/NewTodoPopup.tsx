@@ -16,7 +16,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 // Using the Todo interface from a previous conversation
-export interface Todo {
+export interface AddTodo {
   userId: number | null;
   title: string;
   description: string;

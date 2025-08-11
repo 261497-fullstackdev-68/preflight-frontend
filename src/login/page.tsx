@@ -43,7 +43,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
         setMessage(data.message || "เข้าสู่ระบบสำเร็จ");
         setUsername("");
         setPassword("");
-        onLogin(data.user_id);
+        onLogin(data.userId);
       } else {
         setError(data.error || "Incorrect username or password");
       }

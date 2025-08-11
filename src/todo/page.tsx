@@ -3,8 +3,12 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { NewTodoPopup } from "../component/NewTodoPopup";
 import NotificationBadge from "../component/notificationBadge";
-import { FullTodoPopup, PopupMode } from "../component/fullTodoPopup";
-import type { Todo } from "../component/NewTodoPopup";
+import {
+  FullTodoPopup,
+  PopupMode,
+  type Todo,
+} from "../component/fullTodoPopup";
+import type { AddTodo } from "../component/NewTodoPopup";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
@@ -31,22 +35,12 @@ type TodoProps = {
   userId: number | null;
 };
 
-type ResponseTodo = {
-  taskId: number;
-  userId: number;
-  title: string;
-  description: string;
-  is_done: boolean;
-  startDate: Date | null;
-  endDate: Date | null;
-  image_path: string | null;
-};
-
 function TodoPage({ userId }: TodoProps) {
   const [weekStart, setWeekStart] = useState(dayjs().startOf("week"));
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
-  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Create);
-  const [todos, setTodos] = useState<ResponseTodo[]>([]);
+  const [popupMode, setPopupMode] = useState<PopupMode>(PopupMode.Edit);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
 
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
@@ -68,7 +62,6 @@ function TodoPage({ userId }: TodoProps) {
   };
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
   const handleAddClick = () => {
     // สร้าง todo ตัวอย่าง
 
@@ -186,9 +179,12 @@ function TodoPage({ userId }: TodoProps) {
                       <div className="flex space-x-1 overflow-x-auto">
                         {cellTodos.map((todo) => (
                           <button
-                            key={todo.taskId}
+                            key={todo.id}
                             className="flex-1 bg-blue-500 hover:bg-blue-600 text-white rounded p-1 text-xs truncate"
-                            onClick={() => alert(`Task: ${todo.title}`)}
+                            onClick={() => (
+                              setSelectedTodo(todo),
+                              setIsFullTodoPopupOpen(true)
+                            )}
                             title={todo.title}
                           >
                             {todo.title}
@@ -219,6 +215,17 @@ function TodoPage({ userId }: TodoProps) {
           console.log("New Todo Created:", todo);
         }}
         userId={userId}
+      />
+      <div className="fixed top-8 right-8  rounded-full w-14 h-14 flex items-center justify-center z-50 hover:cursor-pointer">
+        <NotificationBadge userId={userId} />
+      </div>
+      <FullTodoPopup
+        open={isFullTodoPopupOpen}
+        onClose={handleClosePopup}
+        mode={popupMode}
+        todo={selectedTodo}
+        userId={userId}
+        fetchShareTodo={async () => {}}
       />
     </div>
   );
