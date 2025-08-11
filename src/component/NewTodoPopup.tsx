@@ -1,20 +1,14 @@
-import React, { use, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
   Box,
   Typography,
   IconButton,
-  Button,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import ShareIcon from "@mui/icons-material/Share";
-import { SharePopup } from "./sharePopup";
-
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
 // Using the Todo interface from a previous conversation
 export interface AddTodo {
   userId: number | null;
