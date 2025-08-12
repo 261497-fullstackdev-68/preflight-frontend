@@ -27,8 +27,6 @@ export interface Todo {
   imagePath: string | null;
 }
 
-
-
 interface FullTodoPopupProps {
   open: boolean;
   onClose: () => void;
@@ -125,6 +123,7 @@ export function FullTodoPopup({
     axios
       .delete("/api/todo", { data: { id: localTodo.id } })
       .then(() => {
+        fetchTodo();
         onClose();
       })
       .catch((err) => alert(err));
@@ -405,10 +404,10 @@ export function FullTodoPopup({
             <Typography variant="h5" fontWeight="bold"></Typography>
             <Box>
               <IconButton onClick={handleSharePopupOpen}>
-                <ShareIcon />
+                <ShareIcon aria-label="share" />
               </IconButton>
               <IconButton onClick={onClose}>
-                <CloseIcon />
+                <CloseIcon aria-label="close" />
               </IconButton>
             </Box>
           </DialogTitle>

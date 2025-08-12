@@ -152,8 +152,8 @@ export function NewTodoPopup({
                 timeIntervals={15}
                 dateFormat="yyyy-MM-dd HH:mm"
                 className="border rounded px-3 py-2 mr-3"
-                placeholderText="Select start date & time"
-                popperPlacement="bottom-start"
+                placeholderText="Select end date & time"
+                popperPlacement="bottom-end"
                 withPortal
                 fixedHeight
                 required

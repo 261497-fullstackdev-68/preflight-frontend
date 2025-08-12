@@ -145,7 +145,7 @@ export function NotificationPopup({
       >
         Notification
         <IconButton onClick={onClose}>
-          <CancelIcon />
+          <CancelIcon aria-label="close" />
         </IconButton>
       </DialogTitle>
       <List sx={{ pt: 0 }}>
