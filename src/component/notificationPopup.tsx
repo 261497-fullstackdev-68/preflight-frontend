@@ -37,6 +37,7 @@ export function NotificationPopup({
     const task_id_list = shareTodos.map((item) => item.taskId);
 
     if (task_id_list.length === 0) {
+      setFullShareTodo([]);
       return;
     }
 
@@ -134,6 +135,7 @@ export function NotificationPopup({
   }, [shareTodos]);
 
   useEffect(() => {}, [fullShareTodo]);
+
   return (
     <Dialog onClose={onClose} open={open} maxWidth="sm" fullWidth>
       <DialogTitle
