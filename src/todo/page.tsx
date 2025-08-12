@@ -3,12 +3,10 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { NewTodoPopup } from "../component/NewTodoPopup";
 import NotificationBadge from "../component/notificationBadge";
-import {
-  FullTodoPopup,
-  type Todo,
-} from "../component/fullTodoPopup";
+import { FullTodoPopup, type Todo } from "../component/fullTodoPopup";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import type { User } from "../component/sharePopup";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -38,7 +36,8 @@ function TodoPage({ userId }: TodoProps) {
   const [isFullTodoPopupOpen, setIsFullTodoPopupOpen] = useState(false);
   const [todos, setTodos] = useState<Todo[]>([]);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
-  const popupMode = "edit"
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const popupMode = "edit";
 
   const weekDates = getWeekDates(weekStart);
   // Calculate month(s) for current week
@@ -66,6 +65,13 @@ function TodoPage({ userId }: TodoProps) {
 
   const handleClosePopup = () => {
     setIsFullTodoPopupOpen(false);
+  };
+
+  const fetchUser = async () => {
+    const response = await fetch(`/api/users`);
+    const data = await response.json();
+    const filteredUser = data.find((user: User) => user.id === userId);
+    setCurrentUser(filteredUser || null);
   };
 
   const fetchTodo = async () => {
@@ -138,6 +144,7 @@ function TodoPage({ userId }: TodoProps) {
   // Fetch todos from the backend when the userId changes
   useEffect(() => {
     fetchTodo();
+    fetchUser();
   }, [userId]);
 
   useEffect(() => {}, [todos]);
@@ -154,7 +161,7 @@ function TodoPage({ userId }: TodoProps) {
           <NotificationBadge userId={userId} fetchTodo={fetchTodo} />
         </div>
       </div>
-      <h1 className="flex items-center mb-4">Hello User {userId}</h1>
+      <h1 className="flex items-center mb-4">Hello, {currentUser?.username}</h1>
       <div className="flex justify-between mb-6">
         <button
           onClick={handlePrevWeek}
